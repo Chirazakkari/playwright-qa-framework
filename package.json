@@ -1,0 +1,31 @@
+﻿{
+  "name": "playwright-qa-framework",
+  "version": "1.0.0",
+  "main": "",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Production-style Playwright + TypeScript test framework: page objects as fixtures, typed API client with zod contracts, a11y checks and sharded CI.",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "zod": "^4.6.7"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:e2e": "playwright test --project=e2e",
+    "test:api": "playwright test --project=api",
+    "test:headed": "playwright test --project=e2e --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  }
+}
