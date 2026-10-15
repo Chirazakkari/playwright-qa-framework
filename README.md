@@ -1,5 +1,7 @@
 # Playwright QA Framework
 
+[![Playwright tests](https://github.com/Chirazakkari/playwright-qa-framework/actions/workflows/playwright.yml/badge.svg)](https://github.com/Chirazakkari/playwright-qa-framework/actions/workflows/playwright.yml)
+
 A small but production-style test automation framework built with **Playwright + TypeScript**.
 It exercises two public practice targets (so anyone can run it without credentials):
 
