@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hotel Demo assistant</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 520px;
+        margin: 2rem auto;
+      }
+      #log {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        min-height: 220px;
+        padding: 8px;
+        margin-bottom: 8px;
+      }
+      .msg {
+        margin: 4px 0;
+        padding: 6px 10px;
+        border-radius: 10px;
+        max-width: 80%;
+      }
+      .user {
+        background: #dbeafe;
+        margin-left: auto;
+      }
+      .bot {
+        background: #f1f5f9;
+      }
+      form {
+        display: flex;
+        gap: 6px;
+      }
+      input {
+        flex: 1;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hotel Demo assistant</h1>
+    <div id="log" role="log" aria-live="polite" data-test="chat-log"></div>
+    <form id="form">
+      <input id="input" aria-label="Your message" data-test="chat-input" autocomplete="off" />
+      <button id="send" type="submit" data-test="chat-send">Send</button>
+    </form>
+    <script>
+      const log = document.getElementById('log');
+      const input = document.getElementById('input');
+      const send = document.getElementById('send');
+      const delay = new URLSearchParams(location.search).get('delay') || '0';
+      const sessionId = 'widget-' + Math.random().toString(36).slice(2);
+
+      function add(kind, text) {
+        const el = document.createElement('div');
+        el.className = 'msg ' + kind;
+        el.dataset.test = 'msg-' + kind;
+        el.textContent = text; // textContent, never innerHTML: replies are untrusted
+        log.appendChild(el);
+        return el;
+      }
+
+      document.getElementById('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text || send.disabled) return;
+        input.value = '';
+        add('user', text);
+        send.disabled = true;
+        const typing = add('typing', 'Assistant is typing…');
+        try {
+          const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-delay-ms': delay },
+            body: JSON.stringify({ message: text, sessionId }),
+          });
+          const data = await res.json();
+          typing.remove();
+          add('bot', res.ok ? data.reply : 'Sorry, something went wrong.');
+        } catch {
+          typing.remove();
+          add('bot', 'Sorry, something went wrong.');
+        } finally {
+          send.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

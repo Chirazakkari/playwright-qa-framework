@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
+const AI_URL = process.env.AI_URL ?? 'http://localhost:4010';
 
 /**
  * Two independent projects:
@@ -42,5 +43,22 @@ export default defineConfig({
         baseURL: process.env.BASE_URL ?? 'https://www.saucedemo.com',
       },
     },
+    {
+      name: 'ai-api',
+      testMatch: /tests\/ai\/(chatbot|mcp)\.spec\.ts/,
+      use: { baseURL: AI_URL },
+    },
+    {
+      name: 'ai-ui',
+      testMatch: /tests\/ai\/widget\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], baseURL: AI_URL },
+    },
   ],
+  // Fully local, fictional assistant used as an AI/MCP test target (see mock-ai/).
+  webServer: {
+    command: 'npx tsx mock-ai/server.ts',
+    url: AI_URL + '/health',
+    reuseExistingServer: !isCI,
+    timeout: 30_000,
+  },
 });

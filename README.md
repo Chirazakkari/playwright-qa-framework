@@ -26,15 +26,39 @@ It exercises two public practice targets (so anyone can run it without credentia
 | CI                                       | GitHub Actions: typecheck and format gate, **3-way sharding**, merged HTML report                     |
 | Debuggability                            | Trace on first retry, video and screenshot on failure                                                 |
 
+## Testing an AI assistant and an MCP-style tool server
+
+`mock-ai/` is a **fully fictional** hotel assistant that runs locally (no real product, no real data). It exists
+to practise the parts of AI testing that classic suites skip:
+
+| Concern                   | How it is tested                                                                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Non-deterministic wording | Assert **facts** (`15:00`), never whole strings; a test proves the bot really paraphrases                                                                         |
+| Reproducibility           | A seed header makes the "random" model repeatable, so a failing run can be replayed                                                                               |
+| Hallucinations            | An evaluation harness measures the **failure rate** over N samples and is itself tested against a model that lies about 20% of the time                           |
+| Guardrails                | Prompt-injection attempts (EN and FR) must be refused and must never leak a planted secret                                                                        |
+| Scope                     | Out-of-scope questions are deflected with low confidence and no factual answer                                                                                    |
+| Context                   | A follow-up question ("and what time exactly?") resolves within the same session                                                                                  |
+| Tool permissions          | MCP-style `initialize`, `tools/list`, `tools/call` over JSON-RPC 2.0; a **permission matrix** (reader vs writer) and 401s for missing, unknown and expired tokens |
+| Tool input validation     | Table-driven invalid parameters must return JSON-RPC `-32602`                                                                                                     |
+| UI safety                 | The chat widget shows a typing state, blocks double submit, survives a 500, and renders hostile input as text (XSS)                                               |
+
+> The tool server implements only the small JSON-RPC subset above. It is a test target, not a full MCP implementation.
+
+Run it alone with `npm run test:ai`. Playwright starts the mock server automatically (`webServer`).
+
 ## Project layout
 
 ```
 src/
+  ai/         ChatClient, McpClient, semantic assertions (facts, failure rate)
   api/        BookingClient + zod schemas (the API contract)
   data/       test data kept out of the specs
   fixtures/   page objects and API helpers exposed as fixtures
   pages/      Login, Inventory, Cart, Checkout page objects
+mock-ai/      fictional assistant + MCP-style tool server (test target)
 tests/
+  ai/         chatbot answers and guardrails, MCP tools, chat widget
   api/        booking lifecycle, authorization, negative paths
   e2e/        auth, cart/sorting, checkout, accessibility
 ```
